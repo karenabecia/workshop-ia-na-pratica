@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Treinamento Claude - Escola Karen Abecia</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - JetBrains Mono para o estilo retro e Inter para textos de leitura -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            bg: '#181615',         // Fundo chocolate escuro profundo
+                            card: '#221f1d',       // Cards cinza/marrom escuro
+                            terminal: '#131110',   // Fundo de inputs e terminal interno
+                            orange: '#d97d64',     // Terracota / Salmão principal
+                            orangeHover: '#c56b53',
+                            cream: '#f4ebe1',      // Texto principal off-white
+                            muted: '#a3978d',      // Texto secundário opaco
+                            blue: '#7f9ba6',       // Destaques e links funcionais
+                            green: '#6bb081',      // Sucesso / Concluído
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #181615;
+            color: #f4ebe1;
+        }
+        .terminal-glow {
+            box-shadow: 0 0 15px rgba(217, 125, 100, 0.1);
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(217, 125, 100, 0.35);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #181615;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #38322e;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d97d64;
+        }
+        /* Cursor piscando */
+        .cursor-blink::after {
+            content: '▊';
+            animation: cursorBlink 1s infinite;
+            color: #d97d64;
+            margin-left: 2px;
+        }
+        @keyframes cursorBlink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-brand-orange selection:text-brand-bg">
+
+    <!-- HEADER GLOBAL -->
+    <header class="border-b border-brand-card py-4 px-6">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <!-- Logo retro-estilizado -->
+            <div class="flex items-center gap-3 font-mono">
+                <div class="w-3 h-3 rounded-full bg-brand-orange animate-pulse"></div>
+                <span class="text-brand-orange font-bold text-sm tracking-wider">MINITREINAMENTO <span class="text-brand-cream">[</span>CLAUDE<span class="text-brand-cream">]</span></span>
+            </div>
+            <div class="font-mono text-xs text-brand-muted hidden sm:block">
+                escola-karen-abecia://v1.0.0
+            </div>
+        </div>
+    </header>
+
+    <!-- NOTIFICAÇÃO TOAST CUSTOMIZADA (Sem alert nativo!) -->
+    <div id="toast" class="hidden fixed bottom-6 right-6 bg-brand-card border-l-4 border-brand-orange text-brand-cream p-4 rounded-lg shadow-2xl z-50 font-mono text-sm max-w-sm transition-all duration-300 transform translate-y-2 opacity-0">
+        <div class="flex items-start gap-3">
+            <span id="toast-icon" class="text-brand-orange font-bold">[!]</span>
+            <div>
+                <p id="toast-title" class="font-bold text-brand-orange">Aviso do Sistema</p>
+                <p id="toast-message" class="text-brand-muted text-xs mt-1">Mensagem padrão.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
+        <div class="max-w-5xl w-full mx-auto">
+
+            <!-- ================= SCREEN 1: CAPTURA DE LEAD ================= -->
+            <div id="screen-capture" class="block">
+                <!-- Caixa estilo janela de Sistema Operacional/Terminal -->
+                <div class="bg-brand-card rounded-xl border border-brand-muted/20 shadow-2xl overflow-hidden terminal-glow">
+                    <!-- Barra superior da janela padrão -->
+                    <div class="bg-brand-terminal px-4 py-3 flex justify-between items-center border-b border-brand-muted/10 font-mono text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+                            <span class="text-brand-muted ml-2">escola-karen-abecia://mini-treinamento-claude-analisede-dados</span>
+                        </div>
+                        <div class="text-brand-muted select-none">ASCII_MODE</div>
+                    </div>
+
+                    <!-- Conteúdo Interno da Janela -->
+                    <div class="p-6 md:p-10 flex flex-col md:flex-row gap-8 items-center">
+                        <!-- Lado Esquerdo: Headline Simplificada -->
+                        <div class="w-full md:w-1/2 space-y-6">
+                            <!-- Banner do Cabeçalho de Boas-vindas -->
+                            <div class="inline-block border border-brand-orange/30 rounded px-3 py-1 bg-brand-orange/5 font-mono text-xs text-brand-orange">
+                                ✴ Bem-vindo (a) ao mini treinamento Claude para análise de dados
+                            </div>
+                            
+                            <!-- Logotipo de Identificação da Escola -->
+                            <div class="font-mono space-y-1 select-none py-4">
+                                <div class="text-2xl md:text-3xl font-black text-brand-orange tracking-tighter leading-none uppercase">
+                                    MINITREINAMENTO
+                                </div>
+                                <div class="text-3xl md:text-5xl font-black text-brand-cream tracking-normal leading-none flex items-center">
+                                    [CLAUDE]<span class="cursor-blink"></span>
+                                </div>
+                            </div>
+
+                            <!-- Pequenos detalhes técnicos de status no rodapé do terminal -->
+                            <div class="font-mono text-xs text-brand-blue space-y-1 border-t border-brand-muted/10 pt-4">
+                                <p>> status: pronto_para_liberar</p>
+                                <p>> curso: analise_de_dados_ia</p>
+                            </div>
+                        </div>
+
+                        <!-- Lado Direito: Formulário de Captura limpo -->
+                        <div class="w-full md:w-1/2 bg-brand-terminal p-6 rounded-lg border border-brand-muted/10 font-mono">
+                            <div class="mb-4 text-xs text-brand-muted border-b border-brand-muted/10 pb-2">
+                                INSCREVA-SE_AGORA - Insira seus dados para obter acesso imediato
+                            </div>
+                            
+                            <form id="lead-form" onsubmit="handleLeadSubmit(event)" class="space-y-4">
+                                <!-- Campo Nome -->
+                                <div>
+                                    <label for="lead-name" class="block text-xs text-brand-blue mb-1">SEU_NOME:</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-brand-orange text-xs">$</span>
+                                        <input type="text" id="lead-name" required class="w-full bg-brand-card border border-brand-muted/20 rounded pl-7 pr-3 py-2 text-sm text-brand-cream focus:outline-none focus:border-brand-orange transition-colors placeholder:text-brand-muted/30" placeholder="Digite seu nome">
+                                    </div>
+                                </div>
+
+                                <!-- Campo Email -->
+                                <div>
+                                    <label for="lead-email" class="block text-xs text-brand-blue mb-1">MELHOR_EMAIL:</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-brand-orange text-xs">@</span>
+                                        <input type="email" id="lead-email" required class="w-full bg-brand-card border border-brand-muted/20 rounded pl-7 pr-3 py-2 text-sm text-brand-cream focus:outline-none focus:border-brand-orange transition-colors placeholder:text-brand-muted/30" placeholder="Digite seu e-mail">
+                                    </div>
+                                </div>
+
+                                <!-- Campo WhatsApp -->
+                                <div>
+                                    <label for="lead-phone" class="block text-xs text-brand-blue mb-1">WHATSAPP_TELEFONE:</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-brand-orange text-xs">#</span>
+                                        <input type="tel" id="lead-phone" required class="w-full bg-brand-card border border-brand-muted/20 rounded pl-7 pr-3 py-2 text-sm text-brand-cream focus:outline-none focus:border-brand-orange transition-colors placeholder:text-brand-muted/30" placeholder="(11) 99999-9999">
+                                    </div>
+                                </div>
+
+                                <!-- Botão de Envio Estilizado -->
+                                <button type="submit" id="btn-submit-lead" class="w-full py-4 bg-brand-orange text-brand-bg font-extrabold rounded flex items-center justify-center gap-2 hover:bg-brand-orangeHover transition-all btn-glow text-sm tracking-wider uppercase font-mono">
+                                    LIBERAR AGORA
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= SCREEN 2: ÁREA DE TREINAMENTO (9 AULAS) ================= -->
+            <div id="screen-training" class="hidden space-y-6">
+                
+                <!-- Barra de Progresso em Linha no Topo para Fácil Visualização -->
+                <div class="bg-brand-card rounded-xl border border-brand-muted/20 overflow-hidden shadow-md">
+                    <div class="bg-brand-terminal px-4 py-3 border-b border-brand-muted/10 font-mono text-xs flex justify-between items-center">
+                        <span class="text-brand-orange font-bold">> STATUS_DO_SEU_TREINAMENTO_PROGRESS.SYS</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-brand-muted">AULAS CONCLUÍDAS:</span>
+                            <span id="progress-percentage" class="text-brand-green font-extrabold">0%</span>
+                        </div>
+                    </div>
+                    <div class="bg-brand-terminal/40 h-4 w-full">
+                        <div id="progress-bar-fill" class="bg-brand-green h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Painel de Janela Padronizada de Aulas -->
+                <div class="bg-brand-card rounded-xl border border-brand-muted/20 shadow-2xl overflow-hidden">
+                    <!-- Barra superior da janela padronizada com a anterior -->
+                    <div class="bg-brand-terminal px-4 py-3 flex justify-between items-center border-b border-brand-muted/10 font-mono text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+                            <span class="text-brand-muted ml-2">escola-karen-abecia://mini-treinamento-claude-analisede-dados</span>
+                        </div>
+                        <div class="text-brand-blue" id="player-lesson-code">AULA_01.mp4</div>
+                    </div>
+
+                    <!-- Layout de Duas Colunas para o Treinamento -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3">
+                        
+                        <!-- Coluna da Esquerda: Menu de Aulas Minimalista -->
+                        <div class="lg:col-span-1 border-r border-brand-muted/10 flex flex-col justify-between bg-brand-terminal/20">
+                            <!-- Lista de Aulas -->
+                            <div class="p-4 space-y-2 overflow-y-auto max-h-[500px]" id="lessons-list">
+                                <!-- Gerado dinamicamente por JavaScript -->
+                            </div>
+
+                            <!-- Dados do Usuário Ativo -->
+                            <div class="bg-brand-terminal p-4 border-t border-brand-muted/10 font-mono text-xs flex justify-between">
+                                <span class="text-brand-muted">ALUNO: <span id="user-display-name" class="text-brand-cream">Visitante</span></span>
+                                <span class="text-brand-green">CONECTADO</span>
+                            </div>
+                        </div>
+
+                        <!-- Coluna da Direita: Player e Detalhes da Aula Ativa -->
+                        <div class="lg:col-span-2 flex flex-col justify-between bg-brand-card">
+                            <!-- Frame de Vídeo do YouTube -->
+                            <div class="relative w-full aspect-video bg-black">
+                                <iframe id="youtube-player" class="absolute inset-0 w-full h-full" src="" title="Video Player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                            </div>
+
+                            <!-- Informações Básicas de Execução da Aula -->
+                            <div class="p-6 space-y-4">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <h2 id="player-lesson-title" class="text-lg font-bold text-brand-cream font-mono">Título da Aula</h2>
+                                    
+                                    <!-- Botão Concluir Aula -->
+                                    <button onclick="toggleLessonComplete()" id="btn-complete-lesson" class="flex-shrink-0 px-4 py-2 border border-brand-muted/30 text-brand-cream hover:bg-brand-orange/10 hover:border-brand-orange font-mono text-xs rounded transition-all flex items-center gap-1.5">
+                                        <span id="complete-btn-icon">[ ]</span> <span id="complete-btn-text">Marcar como assistida</span>
+                                    </button>
+                                </div>
+
+                                <!-- Navegação rápida do Player -->
+                                <div class="flex justify-between items-center border-t border-brand-muted/10 pt-4 font-mono text-xs">
+                                    <button onclick="navigateLesson(-1)" id="btn-prev-lesson" class="text-brand-muted hover:text-brand-orange disabled:opacity-30">
+                                        &lt;&lt; Aula Anterior
+                                    </button>
+                                    <button onclick="navigateLesson(1)" id="btn-next-lesson" class="text-brand-blue hover:text-brand-orange disabled:opacity-30">
+                                        Próxima Aula &gt;&gt;
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ================= SEÇÃO DE CONVERSÃO FINAL (WORKSHOP) ================= -->
+                <div id="cta-conversion-box" class="bg-brand-card rounded-xl border-2 border-brand-orange/40 overflow-hidden shadow-2xl p-6 md:p-8 space-y-6 text-center">
+                    <div class="font-mono text-xs text-brand-orange tracking-widest uppercase">
+                        ⚡ O PRÓXIMO PASSO DA SUA JORNADA EM I.A ⚡
+                    </div>
+                    
+                    <div class="space-y-3 max-w-2xl mx-auto">
+                        <h3 class="text-2xl md:text-3xl font-extrabold text-brand-cream tracking-tight">
+                            Implementação Workshop I.A na Prática
+                        </h3>
+                        <p class="text-brand-muted text-sm leading-relaxed font-sans">
+                            Um dia inteiro de conteúdo prático: do ChatGPT ao seu próprio agente de I.A. Sem enrolação, sem teoria demais. Só o que muda o seu dia a dia.
+                        </p>
+                    </div>
+
+                    <!-- Botão Principal de Vendas -->
+                    <div class="py-2">
+                        <a href="https://sites.karenabecia.com.br/" target="_blank" class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-brand-orange hover:bg-brand-orangeHover text-brand-bg font-extrabold text-base rounded shadow-lg btn-glow transition-all transform hover:-translate-y-0.5 font-mono uppercase tracking-wider">
+                            <span>[🎟️]</span> GARANTA SEU INGRESSO
+                        </a>
+                    </div>
+
+                    <!-- Banner Informativo Retro Reduzido -->
+                    <div class="bg-brand-terminal rounded-lg border border-brand-muted/20 p-4 font-mono text-xs text-left max-w-xl mx-auto space-y-2">
+                        <div class="flex justify-between border-b border-brand-muted/10 pb-2 text-brand-blue">
+                            <span>DETALHES_DO_WORKSHOP.TXT</span>
+                            <span>INSCRIÇÕES ABERTAS</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-brand-muted pt-1">
+                            <div class="space-y-1">
+                                <p class="text-brand-orange font-bold">📅 QUANDO:</p>
+                                <p>SÁBADO, 23 DE MAIO DAS 09H ÁS 17H</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-brand-orange font-bold">💻 FORMATO:</p>
+                                <p>100% ONLINE E AO VIVO</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER GLOBAL (Assinatura Made with removida conforme solicitado) -->
+    <footer class="border-t border-brand-card py-6 px-6 font-mono text-xs text-brand-muted text-center sm:text-left">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                &copy; 2026 Escola Karen Abecia. Direitos Reservados.
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- LOGICA DO APLICATIVO EM JAVASCRIPT -->
+    <script>
+        // ====================================================================
+        // CONFIGURAÇÃO DO GOOGLE SHEETS (WEBHOOK DO APPS SCRIPT)
+        // Cole sua URL gerada no Google Apps Script entre as aspas abaixo para habilitar a gravação:
+        // Exemplo: const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycb..._ex/exec';
+        const WEBHOOK_URL = ''; 
+        // ====================================================================
+
+        // Dados oficiais das 9 Vídeo Aulas (Links e Títulos simplificados)
+        const lessonsData = [
+            {
+                id: 1,
+                title: "AULA 1 - DIFERENÇAS ENTRE AS VERSÕES DO CLAUDE",
+                youtubeId: "rnxyFBEtjA8"
+            },
+            {
+                id: 2,
+                title: "AULA 2 - CONHECENDO O CLAUDE POR DENTRO",
+                youtubeId: "M7llcrp7U2E"
+            },
+            {
+                id: 3,
+                title: "AULA 3 - O PODER DA ANÁLISE DE DADOS",
+                youtubeId: "tJpxLKTWTfY"
+            },
+            {
+                id: 4,
+                title: "AULA 4 - INSTALANDO O CLAUDE DENTRO DO EXCEL",
+                youtubeId: "8xDqWWAfmDk"
+            },
+            {
+                id: 5,
+                title: "AULA 5 - ORGANIZANDO DADOS NA PRÁTICA",
+                youtubeId: "dwfv4aH_f0U"
+            },
+            {
+                id: 6,
+                title: "AULA 6 - AUTOMATIZANDO FÓRMULAS COM CLAUDE",
+                youtubeId: "rlc-tPV7ehQ"
+            },
+            {
+                id: 7,
+                title: "AULA 7 - DESTACANDO INFORMAÇÕES",
+                youtubeId: "8Z3BQd55k1E"
+            },
+            {
+                id: 8,
+                title: "AULA 8 - DASHBOARD NA PRÁTICA",
+                youtubeId: "WXZ11y5Nm6c"
+            },
+            {
+                id: 9,
+                title: "AULA 9 - MUITO MAIS QUE PLANILHAS",
+                youtubeId: "CQwSbkh6iEc"
+            }
+        ];
+
+        // Estado Global do App
+        let currentUser = {
+            name: "Visitante",
+            email: "",
+            whatsapp: ""
+        };
+        let activeLessonId = 1;
+        let completedLessons = []; // Guarda IDs das aulas concluídas
+
+        // Carrega configurações locais caso existam ao iniciar
+        window.onload = function() {
+            const savedUser = localStorage.getItem('claude_user_data');
+            const savedProgress = localStorage.getItem('claude_progress_data');
+            
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                if (savedProgress) {
+                    completedLessons = JSON.parse(savedProgress);
+                }
+                document.getElementById('user-display-name').textContent = currentUser.name.split(' ')[0];
+                showScreen('screen-training');
+                initLessonsList();
+                loadLesson(1);
+                updateProgressBar();
+            }
+        };
+
+        // Utilitário para troca de telas suave
+        function showScreen(screenId) {
+            document.getElementById('screen-capture').classList.add('hidden');
+            document.getElementById('screen-training').classList.add('hidden');
+            
+            document.getElementById(screenId).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Exibir notificações Toast Personalizadas
+        function showToast(title, message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastTitle = document.getElementById('toast-title');
+            const toastMsg = document.getElementById('toast-message');
+
+            toastIcon.textContent = isError ? '[!]' : '[✓]';
+            toastIcon.className = isError ? 'text-red-500 font-bold' : 'text-brand-green font-bold';
+            toastTitle.textContent = title;
+            toastTitle.className = isError ? 'font-bold text-red-500' : 'font-bold text-brand-orange';
+            toastMsg.textContent = message;
+
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            // Esconder após 4 segundos
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 300);
+            }, 4000);
+        }
+
+        // Lidar com o envio do Formulário de Lead
+        function handleLeadSubmit(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('btn-submit-lead');
+            btn.disabled = true;
+            btn.textContent = "PROCESSANDO...";
+
+            const name = document.getElementById('lead-name').value;
+            const email = document.getElementById('lead-email').value;
+            const phone = document.getElementById('lead-phone').value;
+
+            currentUser = { name, email, whatsapp: phone };
+
+            // Salva dados no LocalStorage do navegador
+            localStorage.setItem('claude_user_data', JSON.stringify(currentUser));
+            document.getElementById('user-display-name').textContent = name.split(' ')[0];
+
+            // Envia para o Google Sheets através de Webhook, se configurado
+            if (WEBHOOK_URL && WEBHOOK_URL !== '') {
+                fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: currentUser.name,
+                        email: currentUser.email,
+                        whatsapp: currentUser.whatsapp,
+                        date: new Date().toISOString()
+                    })
+                })
+                .then(() => {
+                    showToast("Sucesso", "Seus dados foram integrados.");
+                    proceedToTraining();
+                })
+                .catch(err => {
+                    console.error("Erro de webhook:", err);
+                    showToast("Aviso", "Progresso salvo localmente no seu navegador.", true);
+                    proceedToTraining();
+                });
+            } else {
+                showToast("Acesso Liberado!", "Seu treinamento foi inicializado.", false);
+                setTimeout(() => {
+                    proceedToTraining();
+                }, 1000);
+            }
+        }
+
+        function proceedToTraining() {
+            showScreen('screen-training');
+            initLessonsList();
+            loadLesson(1);
+            updateProgressBar();
+        }
+
+        // Renderiza a lista de aulas na coluna esquerda
+        function initLessonsList() {
+            const listContainer = document.getElementById('lessons-list');
+            listContainer.innerHTML = '';
+
+            lessonsData.forEach(lesson => {
+                const isCompleted = completedLessons.includes(lesson.id);
+                const isActive = lesson.id === activeLessonId;
+                
+                const item = document.createElement('button');
+                item.onclick = () => loadLesson(lesson.id);
+                item.className = `w-full p-3.5 rounded text-left font-mono text-xs transition-all border flex items-center justify-between gap-2 ${
+                    isActive 
+                        ? 'bg-brand-orange/10 border-brand-orange text-brand-orange' 
+                        : 'bg-brand-terminal/40 border-brand-muted/10 text-brand-cream hover:bg-brand-terminal/80'
+                }`;
+
+                item.innerHTML = `
+                    <div class="truncate pr-2">
+                        <span class="${isActive ? 'text-brand-orange' : 'text-brand-muted'} font-bold">AULA ${String(lesson.id).padStart(2, '0')}:</span>
+                        <p class="truncate inline ml-1 font-sans font-medium text-xs">${lesson.title.replace(/AULA \d+\s*-\s*/, '')}</p>
+                    </div>
+                    <div class="flex-shrink-0 flex items-center gap-1">
+                        <span id="lesson-status-icon-${lesson.id}" class="${isCompleted ? 'text-brand-green' : 'text-brand-muted/30'} font-bold text-xs">
+                            ${isCompleted ? '[✓]' : '[ ]'}
+                        </span>
+                    </div>
+                `;
+
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Carrega uma aula selecionada no Player
+        function loadLesson(id) {
+            activeLessonId = id;
+            const lesson = lessonsData.find(l => l.id === id);
+            
+            if (!lesson) return;
+
+            // Atualiza player e textos
+            document.getElementById('player-lesson-code').textContent = `AULA_${String(lesson.id).padStart(2, '0')}.mp4`;
+            document.getElementById('player-lesson-title').textContent = lesson.title;
+
+            // Atualiza vídeo do Youtube
+            const iframe = document.getElementById('youtube-player');
+            iframe.src = `https://www.youtube.com/embed/${lesson.youtubeId}?rel=0`;
+
+            // Atualiza botões e estado do botão de concluir
+            const isCompleted = completedLessons.includes(id);
+            const btnIcon = document.getElementById('complete-btn-icon');
+            const btnText = document.getElementById('complete-btn-text');
+            const btn = document.getElementById('btn-complete-lesson');
+
+            if (isCompleted) {
+                btnIcon.textContent = '[✓]';
+                btnText.textContent = 'Assistida!';
+                btn.className = "flex-shrink-0 px-4 py-2 bg-brand-green/10 border border-brand-green text-brand-green font-mono text-xs rounded transition-all flex items-center gap-1.5";
+            } else {
+                btnIcon.textContent = '[ ]';
+                btnText.textContent = 'Marcar como assistida';
+                btn.className = "flex-shrink-0 px-4 py-2 border border-brand-muted/30 text-brand-cream hover:bg-brand-orange/10 hover:border-brand-orange font-mono text-xs rounded transition-all flex items-center gap-1.5";
+            }
+
+            // Desabilita botões anterior/próximo se necessário
+            document.getElementById('btn-prev-lesson').disabled = (id === 1);
+            document.getElementById('btn-next-lesson').disabled = (id === lessonsData.length);
+
+            // Re-renderiza a lista para destacar a aula atual
+            initLessonsList();
+        }
+
+        // Marca/Desmarca aula como concluída
+        function toggleLessonComplete() {
+            const index = completedLessons.indexOf(activeLessonId);
+            
+            if (index > -1) {
+                // Já estava concluída, remover
+                completedLessons.splice(index, 1);
+                showToast("Progresso Atualizado", `Aula ${activeLessonId} pendente.`);
+            } else {
+                // Marcar como concluída
+                completedLessons.push(activeLessonId);
+                showToast("Sucesso!", `Aula ${activeLessonId} marcada como concluída.`, false);
+            }
+
+            // Salva progresso no localStorage
+            localStorage.setItem('claude_progress_data', JSON.stringify(completedLessons));
+
+            // Atualiza interface
+            loadLesson(activeLessonId);
+            updateProgressBar();
+        }
+
+        // Calcula e atualiza a barra de progresso horizontal
+        function updateProgressBar() {
+            const total = lessonsData.length;
+            const completed = completedLessons.length;
+            const pct = Math.round((completed / total) * 100);
+
+            document.getElementById('progress-percentage').textContent = `${pct}%`;
+            document.getElementById('progress-bar-fill').style.width = `${pct}%`;
+        }
+
+        // Navegar entre as aulas (Anterior / Próximo)
+        function navigateLesson(direction) {
+            const nextId = activeLessonId + direction;
+            if (nextId >= 1 && nextId <= lessonsData.length) {
+                loadLesson(nextId);
+            }
+        }
+    </script>
+</body>
+</html>
